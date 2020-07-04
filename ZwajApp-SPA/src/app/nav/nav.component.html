@@ -3,7 +3,7 @@
 font-family:ToyorAljanah;font-size:2.25rem;font-weight:bolder" class="navbar-brand"
     href="#"><i class="fa fa-heart" aria-hidden="true"></i>زواج<i class="fa fa-heart" aria-hidden="true"></i></a>
 
-  <ul style="letter-spacing:1px;font-weight:bold;font-family:'JF Flat';font-size:1.2rem" class="navbar-nav mr-auto">
+  <ul style="letter-spacing:1px;font-weight:bold;font-family:'JF Flat';font-size:1.2rem" class="navbar-nav mr-auto" *ngIf="LoggedIn()">
     <li class="nav-item">
       <a class="nav-link" href="#">الرئيسية </a>
     </li>
@@ -16,26 +16,24 @@ font-family:ToyorAljanah;font-size:2.25rem;font-weight:bolder" class="navbar-bra
     <li class="nav-item">
       <a class="nav-link" href="#">دردشة</a>
     </li>
-
-    <li *ngIf="LoggedIn()" class="nav-item">
-      <a class="nav-link" (click)="LoggedOut()" >تسجيل خروج</a>
-    </li>
+ 
   </ul>
 
   
-  <div class="dropdown">
-    <a *ngIf="LoggedIn()" style="letter-spacing:1px;font-weight:bold;font-family:'JF Flat';font-size:1.2rem" class="dropdown-toggle text-light nav-link">
+  <div dropdown  class="dropdown" *ngIf="LoggedIn()" >
+    <a style="letter-spacing:1px;font-weight:bold;font-family:'JF Flat';font-size:1.2rem" class="dropdown-toggle text-light nav-link" dropdownToggle >
      مرحبا بك
+     {{authService.decodedToken?.unique_name | titlecase}}
     </a>
-    <div class="dropdown-menu">
+    <div *dropdownMenu class="dropdown-menu m-3">
       <a class="dropdown-item"> <i class="fa fa-user" aria-hidden="true"></i>
         ملفي الشخصي</a>
       <div class="dropdown-divider"></div>
-      <a class="dropdown-item"> <i class="fa fa-sign-out" aria-hidden="true"></i> تسجيل الخروج</a>
+      <a class="dropdown-item"  (click)="LoggedOut()">  <i class="fa fa-sign-out" aria-hidden="true"></i> تسجيل الخروج</a>
     </div>
   </div>
 
-  <form *ngIf="!LoggedIn()" (ngSubmit)="Login()" #loginForm="ngForm" class="form-inline my-2 my-lg-0">
+  <form *ngIf="!LoggedIn()" (ngSubmit)="Login()" #loginForm="ngForm" class="ml-5 form-inline my-2 my-lg-0">
     <input  #username="ngModel" name="username" required class="form-control mr-sm-2" type="text" [(ngModel)]="model.username" placeholder="إسم المشترك">
     <input  #password="ngModel" name="password" required class="form-control mr-sm-2" type="password" [(ngModel)]="model.password" placeholder="كلمة السر">
     <button [disabled]="!loginForm.valid" style="font-weight:bold;font-family:'JF Flat';font-size:1.0rem" class="btn btn-secondary my-2 my-sm-0" type="submit">تفضل
