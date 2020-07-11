@@ -26,7 +26,7 @@ font-family:ToyorAljanah;font-size:2.25rem;font-weight:bolder" class="navbar-bra
      {{authService.decodedToken?.unique_name | titlecase}}
     </a>
     <div *dropdownMenu class="dropdown-menu m-3">
-      <a class="dropdown-item"> <i class="fa fa-user" aria-hidden="true"></i>
+      <a class="dropdown-item" [routerLink]="['/members/edit']" >  <i class="fa fa-user" aria-hidden="true" ></i>
         ملفي الشخصي</a>
       <div class="dropdown-divider"></div>
       <a class="dropdown-item"  (click)="LoggedOut()">  <i class="fa fa-sign-out" aria-hidden="true"></i> تسجيل الخروج</a>

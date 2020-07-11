@@ -9,6 +9,8 @@ namespace ZwajApp.API.Dtos
         public string Username { get; set; }
         public string Gender { get; set; }
         public int Age { get; set; }
+        public string Interests { get; set; }
+
         public string KnownAs { get; set; }
         public DateTime Created{set;get;}
         public DateTime LastActive { get; set; }

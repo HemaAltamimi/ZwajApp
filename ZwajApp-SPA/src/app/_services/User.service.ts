@@ -34,4 +34,11 @@ getUser(id):Observable<User>{
   return this.http.get<User>(this.baseUrl+id);
 }
 
+updateUser(id:number,user:User){
+  console.log(id);
+  console.log(user);
+  return this.http.put(this.baseUrl+id,user);
+}
+
+  
 }

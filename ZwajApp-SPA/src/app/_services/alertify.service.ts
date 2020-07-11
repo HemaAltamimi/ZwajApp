@@ -9,9 +9,11 @@ constructor() { }
 
  
 
-confirm(message:string,okCallback:()=>any){
+confirm(message:string,okCallback:()=>any ,cancelCallBack: ()=> any){
   alertify.confirm(message,function(e){
     if(e){okCallback()} else{}
+  }, function(e){
+    if(e){cancelCallBack()} else{}
   })
 }
 
@@ -31,7 +33,29 @@ error(message:string){
       alertify.message(message);
       }
 
+      promisifyConfirm(title: string, message: string, options = {}): Promise<ConfirmResult> {
+
+        return new Promise<ConfirmResult>((resolve) => {
+          alertify.confirm(
+            title,
+            message,
+            () => resolve(ConfirmResult.Ok),
+            () => resolve(ConfirmResult.Cancel)).set(Object.assign({}, {
+              closableByDimmer: false,
+              defaultFocus: 'cancel',
+              frameless: false,
+              closable: false
+            }, options));
+        });
+      }
+
 }
+
+export enum ConfirmResult {
+  Ok = 1,
+  Cancel
+}
+
 
 //defualts
 alertify.defaults = {
@@ -86,11 +110,11 @@ alertify.defaults = {
   // language resources 
   glossary:{
       // dialogs default title
-      title:'AlertifyJS',
+      title:'موقع زواج',
       // ok button text
-      ok: 'OK',
+      ok: 'موافق',
       // cancel button text
-      cancel: 'Cancel'            
+      cancel: 'الغاء'            
   },
 
   // theme settings
