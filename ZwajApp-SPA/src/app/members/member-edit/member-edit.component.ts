@@ -24,8 +24,7 @@ unLoadNotification($event:any){
 }
 
   user:User
-
-
+  photoUrl:string;
   constructor(private route:ActivatedRoute ,private alertify:AlertifyService,private userService:UserService ,private authService:AuthService) {
 
    }
@@ -34,6 +33,10 @@ unLoadNotification($event:any){
     this.route.data.subscribe(data =>{
       this.user =data['user'];
     })
+
+    this.authService.currentPhotoUrl.subscribe(
+      data => this.photoUrl =data
+    )
   }
 
   updateUser(){
@@ -46,6 +49,10 @@ unLoadNotification($event:any){
       },
       error => this.alertify.error(error)
     )
+  }
+
+  updateMainPhoto(photourl){
+    this.user.photoURL =photourl;
   }
 
 }

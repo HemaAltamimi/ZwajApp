@@ -9,59 +9,69 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using AutoMapper;
 
 namespace ZwajApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController :ControllerBase
+    public class AuthController : ControllerBase
     {
-        private readonly IAuthRepository  _repo ;
-        private readonly IConfiguration  _config ;
-        public AuthController(IAuthRepository repo ,IConfiguration config)
+        private readonly IAuthRepository _repo;
+        private readonly IConfiguration _config;
+        private readonly IMapper _mapper;
+        public AuthController(IAuthRepository repo, IConfiguration config, IMapper mapper)
         {
-            _repo=repo;
+            _mapper = mapper;
+            _repo = repo;
             _config = config;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto ){
+        public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
+        {
             //validation
-            userForRegisterDto.Username =userForRegisterDto.Username.ToLower();
-            if(await _repo.UserExists(userForRegisterDto.Username)) return BadRequest(" هذا المستخدم مسجل من قبل");
+            userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
+            if (await _repo.UserExists(userForRegisterDto.Username)) return BadRequest(" هذا المستخدم مسجل من قبل");
 
-            var user = new User{
-                Username =userForRegisterDto.Username
-             };
-            var createdUser =  await _repo.Register(user ,userForRegisterDto.Password);
+            var user = new User
+            {
+                Username = userForRegisterDto.Username
+            };
+            var createdUser = await _repo.Register(user, userForRegisterDto.Password);
 
             return StatusCode(201);
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(UserForLoginDto userForLoginDto){
-            var userFromRespo =await _repo.Login(userForLoginDto.Username.ToLower(),userForLoginDto.Password);
-            if(userFromRespo == null) return Unauthorized();
+        public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)
+        {
+            var userFromRespo = await _repo.Login(userForLoginDto.Username.ToLower(), userForLoginDto.Password);
+            if (userFromRespo == null) return Unauthorized();
             var calims = new[]{
                 new Claim(ClaimTypes.NameIdentifier,userFromRespo.Id.ToString()),
                 new Claim(ClaimTypes.Name,userFromRespo.Username)
             };
 
-            var key =new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
-            var creds = new SigningCredentials(key,SecurityAlgorithms.HmacSha512);
-            var tokenDescriptor =new SecurityTokenDescriptor{
-                Subject =new ClaimsIdentity(calims),
-                Expires =DateTime.Now.AddDays(1),
-                SigningCredentials =creds
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(calims),
+                Expires = DateTime.Now.AddDays(1),
+                SigningCredentials = creds
 
             };
 
-            var tokenHandler=new JwtSecurityTokenHandler();
+            var tokenHandler = new JwtSecurityTokenHandler();
 
-            var token =tokenHandler.CreateToken(tokenDescriptor);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var user =_mapper.Map<UserForListDto>(userFromRespo);
+            return Ok(new
+            {
 
-            return Ok( new{
-                token =tokenHandler.WriteToken(token)
+                token = tokenHandler.WriteToken(token),
+                user
             });
         }
 

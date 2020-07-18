@@ -44,6 +44,9 @@ namespace ZwajApp.API
 
             services.AddTransient<TrialData>();
 
+            //Make Concante class prop With AppSettings
+            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySetting"));
+
             services.AddScoped<IAuthRepository,AuthRepository>();
             services.AddScoped<IZawajRepository,ZawajRepositry>();
 
