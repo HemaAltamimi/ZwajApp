@@ -41,6 +41,9 @@ import { PreventUnsavedChangesGuard } from './_guards/prevent-unsaved-changes.gu
 import { PhotoEditorComponent } from './members/photo-editor/photo-editor.component';
 
 
+import {TimeAgoPipe} from 'time-ago-pipe';
+
+
 
 export function tokenGetter() {
    return localStorage.getItem("token");
@@ -59,6 +62,8 @@ export function tokenGetter() {
       MemberDetailComponent,
       MemberEditComponent,
       PhotoEditorComponent,
+      TimeAgoPipe
+
    ],
    imports: [
       BrowserModule,
@@ -77,7 +82,7 @@ export function tokenGetter() {
        TabsModule.forRoot(),
        NgxGalleryModule ,
        ReactiveFormsModule,
-       BsDatepickerModule.forRoot()
+       BsDatepickerModule.forRoot(),
    ],
    providers: [
       AuthService,

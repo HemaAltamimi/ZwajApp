@@ -17,7 +17,12 @@ export class MemberDetailComponent implements OnInit {
   galleryOptions: NgxGalleryOptions[];
   galleryImages: NgxGalleryImage[];
 
-  user:User
+  user:User;
+  age:string;
+  created:string;
+  options ={weekDay:'long' ,year : 'numeric' ,month: 'long' ,day : 'numeric'}
+  showIntro:boolean =true;
+  showLook:boolean =true;
   constructor(private userService:UserService,private alertify:AlertifyService,private route:ActivatedRoute) { }
 
   ngOnInit() {
@@ -35,6 +40,10 @@ export class MemberDetailComponent implements OnInit {
       preview:false
     }]
     this.galleryImages=this.getImages();
+    this.created = new Date(this.user.created).toLocaleString('ar-EG',this.options);
+    this.age = this.user.age.toLocaleString('ar-EG');
+    this.showIntro =true;
+    this.showLook =true;
   }
 
   getImages(){
@@ -48,8 +57,7 @@ export class MemberDetailComponent implements OnInit {
     }
     return imageUrls
   }
-
-
+ 
 // loadUser(){
 // this.userService.getUser(+this.route.snapshot.params['id']).subscribe(
 //   (user:User) =>{this.user =user} ,

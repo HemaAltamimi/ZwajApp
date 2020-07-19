@@ -50,6 +50,9 @@ namespace ZwajApp.API
             services.AddScoped<IAuthRepository,AuthRepository>();
             services.AddScoped<IZawajRepository,ZawajRepositry>();
 
+            //Action Filter
+            services.AddScoped<LogUserActivity>();
+
             //Authentication Middleware
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(Options =>{
