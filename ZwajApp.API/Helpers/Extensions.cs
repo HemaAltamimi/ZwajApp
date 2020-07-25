@@ -1,4 +1,6 @@
 using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace ZwajApp.API.Helpers
 {
@@ -22,5 +24,16 @@ namespace ZwajApp.API.Helpers
 
            return age;
        }  
+
+
+        public static void AddPagination(this Microsoft.AspNetCore.Http.HttpResponse response,int currentPage , int itemsPerPage , int totalItems, int totalPages){
+
+           var paginationHeader = new PaginationHeader(currentPage,itemsPerPage,totalItems,totalPages);
+           var camelCaseFormater =new JsonSerializerSettings();
+           camelCaseFormater.ContractResolver = new CamelCasePropertyNamesContractResolver();
+           response.Headers.Add("Pagination",JsonConvert.SerializeObject(paginationHeader,camelCaseFormater));
+           response.Headers.Add("Access-Control-Expose-Headers","Pagination");
+
+       }
     }
 }

@@ -30,7 +30,7 @@ import { AuthService } from './_services/auth.service';
 import { AuthGuard } from './_guards/auth.guard';
 import { UserService } from './_services/User.service';
 
-import { BsDropdownModule, TabsModule, BsDatepickerModule } from 'ngx-bootstrap';
+import { BsDropdownModule, TabsModule, BsDatepickerModule, PaginationModule, ButtonsModule } from 'ngx-bootstrap';
 
 import { appRoutes } from './routes';
 import { MemberDetailResolver } from './_resolver/member-detail-resolver';
@@ -83,6 +83,9 @@ export function tokenGetter() {
        NgxGalleryModule ,
        ReactiveFormsModule,
        BsDatepickerModule.forRoot(),
+       PaginationModule.forRoot(),
+       
+      ButtonsModule
    ],
    providers: [
       AuthService,

@@ -25,10 +25,19 @@ namespace ZwajApp.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery]UserParams userParams)
         {
-            var users = await _repo.GetUsers();
-             var usersToReturn=_mapper.Map<IEnumerable<UserForListDto>>(users);
+            var currentUserId =int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var UserFromRepo =await _repo.GetUser(currentUserId);
+            userParams.UserId =currentUserId;
+            if(string.IsNullOrEmpty(userParams.Gender)){
+                userParams.Gender = UserFromRepo.Gender == "رجل" ? "إمرأة"  : "رجل";
+            }
+            var users = await _repo.GetUsers(userParams);
+            var usersToReturn=_mapper.Map<IEnumerable<UserForListDto>>(users);
+
+            //Add Header
+            Response.AddPagination(users.CurrentPage ,users.PageSize ,users.TotalCount,users.TotalPages);
             return Ok(usersToReturn);
         }
 
