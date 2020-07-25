@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using ZwajApp.API.Data;
 using ZwajApp.API.Dtos;
 using ZwajApp.API.Helpers;
+using ZwajApp.API.Models;
 
 namespace ZwajApp.API.Controllers
 {
@@ -25,44 +26,65 @@ namespace ZwajApp.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery]UserParams userParams)
+        public async Task<IActionResult> GetUsers([FromQuery] UserParams userParams)
         {
-            var currentUserId =int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var UserFromRepo =await _repo.GetUser(currentUserId);
-            userParams.UserId =currentUserId;
-            if(string.IsNullOrEmpty(userParams.Gender)){
-                userParams.Gender = UserFromRepo.Gender == "رجل" ? "إمرأة"  : "رجل";
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var UserFromRepo = await _repo.GetUser(currentUserId);
+            userParams.UserId = currentUserId;
+            if (string.IsNullOrEmpty(userParams.Gender))
+            {
+                userParams.Gender = UserFromRepo.Gender == "رجل" ? "إمرأة" : "رجل";
             }
             var users = await _repo.GetUsers(userParams);
-            var usersToReturn=_mapper.Map<IEnumerable<UserForListDto>>(users);
+            var usersToReturn = _mapper.Map<IEnumerable<UserForListDto>>(users);
 
             //Add Header
-            Response.AddPagination(users.CurrentPage ,users.PageSize ,users.TotalCount,users.TotalPages);
+            Response.AddPagination(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
             return Ok(usersToReturn);
         }
 
-        [HttpGet("{id}",Name="GetUser")]
+        [HttpGet("{id}", Name = "GetUser")]
         public async Task<IActionResult> GetUser(int id)
         {
             var user = await _repo.GetUser(id);
             if (user == null) return BadRequest("لا يوجد مستخدم");
 
-            var userToReturn=_mapper.Map<UserForDetailsDto>(user);
+            var userToReturn = _mapper.Map<UserForDetailsDto>(user);
             return Ok(userToReturn);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id , UserForUpdateDto userForUpdateDto)
+        public async Task<IActionResult> UpdateUser(int id, UserForUpdateDto userForUpdateDto)
         {
-            if(id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)) return Unauthorized();
+            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)) return Unauthorized();
 
-            var UserFromRepo =await _repo.GetUser(id);
-            _mapper.Map(userForUpdateDto,UserFromRepo);
-            if(await _repo.SaveAll()){
+            var UserFromRepo = await _repo.GetUser(id);
+            _mapper.Map(userForUpdateDto, UserFromRepo);
+            if (await _repo.SaveAll())
+            {
                 return NoContent();
             }
 
-            throw new System.Exception($"حدثت مشكلة في التعديل") ;       
+            throw new System.Exception($"حدثت مشكلة في التعديل");
+        }
+
+        [HttpPost("{id}/Like/{recipientId}")]
+        public async Task<IActionResult> LikeUser(int id, int recipientId)
+        {
+            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)) return Unauthorized();
+            var like = await _repo.GetLike(id, recipientId);
+            if (like != null)
+                return BadRequest("لقد قمت بالإعجاب بهذا المشترك من قبل");
+            if (await _repo.GetUser(recipientId) == null) return NotFound();
+            like = new Like
+            {
+                LikerId = id,
+                LikeeId = recipientId
+            };
+            _repo.Add<Like>(like);
+            if (await _repo.SaveAll())
+                return Ok();
+            return BadRequest("فشل في الإعجاب");
         }
     }
 }

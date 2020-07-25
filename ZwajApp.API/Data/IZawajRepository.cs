@@ -14,5 +14,7 @@ namespace ZwajApp.API.Data
          Task<User> GetUser(int Id);
          Task<Photo> GetPhoto(int id);
         abstract Task<Photo> GetMainPhotoForUSer(int userId);
+
+        Task<Like> GetLike(int userId ,int recipionetId);
     }
 }

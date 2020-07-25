@@ -42,6 +42,7 @@ import { PhotoEditorComponent } from './members/photo-editor/photo-editor.compon
 
 
 import {TimeAgoPipe} from 'time-ago-pipe';
+import { ListResolver } from './_resolver/lists.resolver';
 
 
 
@@ -96,6 +97,7 @@ export function tokenGetter() {
       MemberDetailResolver,
       MemberListResolver,
       MemberEditResolver,
+      ListResolver,
       PreventUnsavedChangesGuard
    ],
    bootstrap: [
