@@ -13,8 +13,11 @@ namespace ZwajApp.API.Data
          Task<PagedList<User>> GetUsers(UserParams userParams);
          Task<User> GetUser(int Id);
          Task<Photo> GetPhoto(int id);
-        abstract Task<Photo> GetMainPhotoForUSer(int userId);
-
-        Task<Like> GetLike(int userId ,int recipionetId);
+         abstract Task<Photo> GetMainPhotoForUSer(int userId);
+         Task<Like> GetLike(int userId ,int recipionetId);
+         Task<Message> GetMessage(int id);
+         Task<PagedList<Message>> GetMessagesForUser(MessageParams messageParams);
+         Task<IEnumerable<Message>> GetConvarsation(int userId , int recipientId);
+         Task<int> GetUnreadMessagesForUser(int userId);
     }
 }

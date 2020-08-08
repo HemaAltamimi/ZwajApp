@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using ZwajApp.API.Helpers;
 using AutoMapper;
+using ZwajApp.API.Models;
 
 namespace ZwajApp.API
 {
@@ -37,7 +38,18 @@ namespace ZwajApp.API
         {
             services.AddDbContext<DataContext>(d =>d.UseSqlite(Configuration.GetConnectionString("DefaulConnection")));
             services.AddControllers();
-            services.AddCors();
+            //services.AddCors();
+            services.AddCors(options =>
+                        {
+                            options.AddDefaultPolicy(builder => 
+                                builder.SetIsOriginAllowed(_ => true)
+                                .AllowAnyMethod()
+                                .AllowAnyHeader()
+                                .AllowCredentials());
+                        });
+
+            services.AddSignalR();
+
             services.AddAutoMapper();
 
             services.AddMvc();
@@ -63,6 +75,9 @@ namespace ZwajApp.API
                     ValidateAudience=false
                 };
             });
+
+
+           
             
         }
 
@@ -98,17 +113,23 @@ namespace ZwajApp.API
             // app.UseHttpsRedirection();
 
            // trialData.TrialUsers();
-            app.UseCors(x =>x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-
+            //app.UseCors(x =>x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+                app.UseCors();
+          
             app.UseAuthentication();
             
             app.UseRouting();
 
             app.UseAuthorization();
 
+            // in asp core 2.1  only
+            //app.UseSignalR(routes => {  routes.MapHub<ChatHub>("/chat"); });
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                // in asp core 3 above
+                endpoints.MapHub<ChatHub>("/chat");
             });
         }
     }

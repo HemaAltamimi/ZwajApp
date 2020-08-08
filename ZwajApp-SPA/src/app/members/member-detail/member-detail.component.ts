@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { User } from 'src/app/_models/User';
 import { UserService } from 'src/app/_services/User.service';
 import { AlertifyService } from 'src/app/_services/alertify.service';
 import { ActivatedRoute } from '@angular/router';
-import { TabHeadingDirective } from 'ngx-bootstrap';
+import { TabHeadingDirective, TabsetComponent } from 'ngx-bootstrap';
 import { NgxGalleryOptions, NgxGalleryImage, NgxGalleryAnimation } from 'ngx-gallery';
+import { AuthService } from 'src/app/_services/auth.service';
 
 
 @Component({
@@ -14,6 +15,8 @@ import { NgxGalleryOptions, NgxGalleryImage, NgxGalleryAnimation } from 'ngx-gal
 })
 export class MemberDetailComponent implements OnInit {
 
+  @ViewChild('memberTabs') memberTabs:TabsetComponent;
+ 
   galleryOptions: NgxGalleryOptions[];
   galleryImages: NgxGalleryImage[];
 
@@ -23,13 +26,22 @@ export class MemberDetailComponent implements OnInit {
   options ={weekDay:'long' ,year : 'numeric' ,month: 'long' ,day : 'numeric'}
   showIntro:boolean =true;
   showLook:boolean =true;
-  constructor(private userService:UserService,private alertify:AlertifyService,private route:ActivatedRoute) { }
+  constructor(private userService:UserService,private alertify:AlertifyService,private route:ActivatedRoute,private authService:AuthService) { }
 
   ngOnInit() {
+    
+
     // this.loadUser();
     this.route.data.subscribe(data =>{
       this.user =data['user'];
     });
+
+    this.route.queryParams.subscribe(
+      param => {
+        const selectedTab = param['tab'];
+        this.memberTabs.tabs[selectedTab>0?selectedTab:0].active =true;
+      }
+    )
 
     this.galleryOptions=[{
       width:'500px',
@@ -46,6 +58,10 @@ export class MemberDetailComponent implements OnInit {
     this.showLook =true;
   }
 
+  selectTab(tabId:number){
+    this.memberTabs.tabs[tabId].active =true;
+  }
+
   getImages(){
     const imageUrls=[];
     for(let i=0;i<this.user.photos.length;i++){
@@ -58,6 +74,10 @@ export class MemberDetailComponent implements OnInit {
     return imageUrls
   }
  
+  deselect(){
+    this.authService.hubConnection.stop();
+  }
+
 // loadUser(){
 // this.userService.getUser(+this.route.snapshot.params['id']).subscribe(
 //   (user:User) =>{this.user =user} ,
