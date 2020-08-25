@@ -141,4 +141,12 @@ export class UserService {
   deleteMessage(id:number,userId:number){
     return this.http.post(this.baseUrl+userId+"/messages/"+id,{});
   }
+
+  charge(userId:number,stripToken:string){
+    return this.http.post(this.baseUrl+ userId +'/charge/' +stripToken ,{});
+  }
+
+  getPaymentForUser(userId:number){
+    return this.http.get(this.baseUrl+userId+"/payment");
+  }
 }
