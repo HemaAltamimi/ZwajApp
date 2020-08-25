@@ -6,6 +6,7 @@ import { environment } from 'src/environments/environment';
 import { User } from '../_models/User';
 import {BehaviorSubject} from 'rxjs';
 import { HubConnection, HubConnectionBuilder } from '@aspnet/signalr';
+import { element } from '@angular/core/src/render3/instructions';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +21,8 @@ baseUrl= environment.apiUrl +'Auth/';
 decodedToken:any;
 
 currentUser :User;
+
+paid:boolean =false;
 
 photoUrl = new BehaviorSubject<string>('../../assets/User.png');
 currentPhotoUrl =this.photoUrl.asObservable();
@@ -66,6 +69,18 @@ loggedIn(){
 
 changeMemberPhoto(newPhotoUrl:string){
   this.photoUrl.next(newPhotoUrl);
+}
+
+roleMatch(AllowedRoles:Array<string>) :boolean{
+  let isMatch =false; 
+  const userRoles =this.decodedToken.role as Array<string>;
+  AllowedRoles.forEach(element =>{
+    if(userRoles.includes(element)){
+      isMatch=true;
+      return;
+    }
+  });
+  return isMatch;
 }
 
 

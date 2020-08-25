@@ -3,7 +3,7 @@ import { AuthService } from "../_services/auth.service";
 import { NEXT } from "@angular/core/src/render3/interfaces/view";
 import { AlertifyService } from "../_services/alertify.service";
 import { Router } from "@angular/router";
-import { UserService } from "../_services/User.service";
+import { UserService } from "../_services/user.service";
 import { HubConnection, HubConnectionBuilder } from "@aspnet/signalr";
 
 @Component({
@@ -32,7 +32,9 @@ export class NavComponent implements OnInit {
       (photoUrl) => (this.photoUrl = photoUrl)
     );
 
-    this.userService
+    
+    if(this.LoggedIn){
+      this.userService
       .getUnreadCount(this.authService.decodedToken.nameid)
       .subscribe((data) => {
         this.authService.unReadCount.next(data.toString());
@@ -40,6 +42,9 @@ export class NavComponent implements OnInit {
           this.count = res;
         });
       });
+      this.getPaymentForUser();
+    }
+
     this.hubConnection = new HubConnectionBuilder()
       .withUrl("http://localhost:5000/chat")
       .build();
@@ -56,6 +61,7 @@ export class NavComponent implements OnInit {
           });
       }, 0);
     });
+
   }
 
   Login() {
@@ -69,6 +75,7 @@ export class NavComponent implements OnInit {
             this.authService.latestCount.subscribe((res) => {
               this.count = res;
             });
+            this.getPaymentForUser();
           });
       },
       (error) => this.alertify.error(error),
@@ -83,11 +90,25 @@ export class NavComponent implements OnInit {
   }
 
   LoggedOut() {
+    this.authService.paid=false;
     localStorage.removeItem("token");
     this.authService.decodedToken = null;
     localStorage.removeItem("user");
     this.authService.currentUser = null;
     this.alertify.message("Sign Out");
     this.router.navigate([""]);
+  }
+
+  getPaymentForUser(){
+
+    this.userService.getPaymentForUser(this.authService.currentUser.id).subscribe(
+      res =>{
+        if(res !== null)
+          this.authService.paid =true;
+        else
+        this.authService.paid =false;
+
+      }
+    )
   }
 }

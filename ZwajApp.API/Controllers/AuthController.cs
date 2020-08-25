@@ -10,46 +10,75 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace ZwajApp.API.Controllers
 {
+    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthRepository _repo;
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
-        public AuthController(IAuthRepository repo, IConfiguration config, IMapper mapper)
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        public AuthController(IConfiguration config, IMapper mapper, UserManager<User> userManager, SignInManager<User> signInManager)
         {
+            _signInManager = signInManager;
+            _userManager = userManager;
             _mapper = mapper;
-            _repo = repo;
             _config = config;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
-        {
-            userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
-            if (await _repo.UserExists(userForRegisterDto.Username))
-                return BadRequest("هذا المستخدم مسجل من قبل");
+        { 
             var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
-            var CreatedUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
-            var userToReturn = _mapper.Map<UserForDetailsDto>(CreatedUser);
-            return CreatedAtRoute("GetUser",new{controller = "Users",id=CreatedUser.Id},userToReturn);
-
+            var result = await _userManager.CreateAsync(userToCreate,userForRegisterDto.Password);
+            var userToReturn = _mapper.Map<UserForDetailsDto>(userToCreate);
+            if(result.Succeeded){
+               return CreatedAtRoute("GetUser", new { controller = "Users", id = userToCreate.Id }, userToReturn);
+            }
+        
+            return BadRequest(result.Errors);
         }
 
         [HttpPost("Login")]
         public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)
         {
-            var userFromRespo = await _repo.Login(userForLoginDto.Username.ToLower(), userForLoginDto.Password);
-            if (userFromRespo == null) return Unauthorized();
-            var calims = new[]{
-                new Claim(ClaimTypes.NameIdentifier,userFromRespo.Id.ToString()),
-                new Claim(ClaimTypes.Name,userFromRespo.Username)
+            var user = await _userManager.FindByNameAsync(userForLoginDto.Username);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, userForLoginDto.Password, false);
+            if (result.Succeeded)
+            {
+                var appUser = await _userManager.Users.Include(p => p.Photos).FirstOrDefaultAsync(u => u.NormalizedUserName == userForLoginDto.Username.ToUpper());
+                var userToReturn = _mapper.Map<UserForListDto>(appUser);
+                return Ok(new
+                {
+
+                    token = GenerateJwtToken(appUser).Result,
+                    user= userToReturn
+                });
+            }
+            return Unauthorized();
+        }
+
+        private async Task<string> GenerateJwtToken(User user)
+        {
+            var calims = new List<Claim>{
+                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
+                new Claim(ClaimTypes.Name,user.UserName)
             };
+
+            var roles =await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                calims.Add(new Claim(ClaimTypes.Role,role));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
@@ -64,14 +93,10 @@ namespace ZwajApp.API.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            var user =_mapper.Map<UserForListDto>(userFromRespo);
-            return Ok(new
-            {
-
-                token = tokenHandler.WriteToken(token),
-                user
-            });
+            return tokenHandler.WriteToken(token);
         }
 
     }
 }
+
+

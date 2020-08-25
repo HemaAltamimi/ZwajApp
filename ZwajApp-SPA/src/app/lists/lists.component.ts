@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { User } from '../_models/User';
 import { Pagination, PaginationResult } from '../_models/Pagination';
 import { AuthService } from '../_services/auth.service';
-import { UserService } from '../_services/User.service';
+import { UserService } from '../_services/user.service';
 import { ActivatedRoute } from '@angular/router';
 import { AlertifyService } from '../_services/alertify.service';
 

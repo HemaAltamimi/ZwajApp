@@ -12,6 +12,10 @@ import { MemberEditResolver } from './_resolver/member-edit-resolver'
 import { PreventUnsavedChangesGuard } from './_guards/prevent-unsaved-changes.guard'
 import { ListResolver } from './_resolver/lists.resolver'
 import { MessageResolver } from './_resolver/message.resolver'
+import { PaymentComponent } from './payment/payment.component'
+import { MessagesGuard } from './_guards/messages.guard'
+import { ChargeGuard } from './_guards/charge.guard'
+import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component'
  
 
 export const appRoutes:Routes =[
@@ -24,7 +28,11 @@ export const appRoutes:Routes =[
         {path:'members/:id',component:MemberDetailComponent ,resolve:{user:MemberDetailResolver}},
       
         {path:'lists',component:ListsComponent,resolve:{users:ListResolver}},
-        {path:'messages',component:MessagesComponent,resolve:{messages:MessageResolver}} ]
+        {path:'messages',component:MessagesComponent,canActivate:[MessagesGuard],resolve:{messages:MessageResolver}},
+        {path:'charge',component:PaymentComponent,canActivate:[ChargeGuard]},
+        {path:'admin',component:AdminPanelComponent, data :{roles:['Admin','Moderator']}}
+    ]
+
     },
  
     {path:'**',redirectTo:'',pathMatch:'full'}

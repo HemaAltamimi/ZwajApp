@@ -2,21 +2,21 @@
 
 namespace ZwajApp.API.Migrations
 {
-    public partial class AddPublicIdInPhoto : Migration
+    public partial class AddIsAprovedOnPhoto : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "PublicId",
+            migrationBuilder.AddColumn<bool>(
+                name: "IsApproved",
                 table: "Photos",
-                type: "TEXT",
-                nullable: true);
+                nullable: false,
+                defaultValue: false);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "PublicId",
+                name: "IsApproved",
                 table: "Photos");
         }
     }

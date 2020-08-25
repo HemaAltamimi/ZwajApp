@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewChecked } from '@angular/core';
 import { User } from 'src/app/_models/User';
-import { UserService } from 'src/app/_services/User.service';
+import { UserService } from 'src/app/_services/user.service';
 import { AlertifyService } from 'src/app/_services/alertify.service';
 import { ActivatedRoute } from '@angular/router';
 import { TabHeadingDirective, TabsetComponent } from 'ngx-bootstrap';
@@ -13,13 +13,14 @@ import { AuthService } from 'src/app/_services/auth.service';
   templateUrl: './member-detail.component.html',
   styleUrls: ['./member-detail.component.css']
 })
-export class MemberDetailComponent implements OnInit {
+export class MemberDetailComponent implements OnInit,AfterViewChecked {
 
   @ViewChild('memberTabs') memberTabs:TabsetComponent;
  
   galleryOptions: NgxGalleryOptions[];
   galleryImages: NgxGalleryImage[];
 
+  paid:boolean=false;
   user:User;
   age:string;
   created:string;
@@ -28,9 +29,15 @@ export class MemberDetailComponent implements OnInit {
   showLook:boolean =true;
   constructor(private userService:UserService,private alertify:AlertifyService,private route:ActivatedRoute,private authService:AuthService) { }
 
+  ngAfterViewChecked(): void {
+    setTimeout(() => {
+        this.paid =this.authService.paid;
+    }, 0);
+  }
+
   ngOnInit() {
     
-
+    this.paid =this.authService.paid;
     // this.loadUser();
     this.route.data.subscribe(data =>{
       this.user =data['user'];

@@ -147,6 +147,6 @@ export class UserService {
   }
 
   getPaymentForUser(userId:number){
-    return this.http.get(this.baseUrl+userId+"/payment");
+    return this.http.get(this.baseUrl + userId + '/payment');
   }
 }

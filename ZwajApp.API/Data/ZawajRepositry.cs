@@ -37,12 +37,17 @@ namespace ZwajApp.API.Data
 
         public async Task<Photo> GetPhoto(int id)
         {
-            return await _context.Photos.FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Photos.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<User> GetUser(int Id)
+        public async Task<User> GetUser(int Id ,bool isCurrentUser)
         {
-            var user = await _context.Users.Include(u => u.Photos).FirstOrDefaultAsync(a => a.Id == Id);
+            var query =_context.Users.Include(u => u.Photos).AsQueryable();
+            if(isCurrentUser){
+                // Ignore Query Filter in DataContext
+                query= query.IgnoreQueryFilters();
+            }
+            var user = await query.FirstOrDefaultAsync(a => a.Id == Id);
             return user;
         }
 
@@ -139,6 +144,11 @@ namespace ZwajApp.API.Data
             var count = messages.Count();
             return count;
 
+        }
+
+        public async Task<Payment> GetPaymentForUser(int userId)
+        {
+            return await _context.Payments.FirstOrDefaultAsync(p =>p.UserId == userId);
         }
     }
 }

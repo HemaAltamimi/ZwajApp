@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Message } from '../_models/message';
 import { Pagination, PaginationResult } from '../_models/Pagination';
 import { PaginationModule } from 'ngx-bootstrap';
-import { UserService } from '../_services/User.service';
+import { UserService } from '../_services/user.service';
 import { AuthService } from '../_services/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import { AlertifyService } from '../_services/alertify.service';
@@ -21,6 +21,7 @@ export class MessagesComponent implements OnInit {
   constructor(private userService:UserService ,private authService:AuthService,private route:ActivatedRoute,private alertify:AlertifyService) { }
 
   ngOnInit() {
+    console.log('meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee');
     this.route.data.subscribe(
       data =>{
         this.messages =data['messages'].result;

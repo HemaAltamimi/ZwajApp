@@ -11,7 +11,7 @@ namespace ZwajApp.API.Data
          void Delete <T>(T entity) where T:class;
          Task<bool> SaveAll();
          Task<PagedList<User>> GetUsers(UserParams userParams);
-         Task<User> GetUser(int Id);
+         Task<User> GetUser(int Id , bool isCurrentUser);
          Task<Photo> GetPhoto(int id);
          abstract Task<Photo> GetMainPhotoForUSer(int userId);
          Task<Like> GetLike(int userId ,int recipionetId);
@@ -19,5 +19,6 @@ namespace ZwajApp.API.Data
          Task<PagedList<Message>> GetMessagesForUser(MessageParams messageParams);
          Task<IEnumerable<Message>> GetConvarsation(int userId , int recipientId);
          Task<int> GetUnreadMessagesForUser(int userId);
+         Task<Payment> GetPaymentForUser(int userId);
     }
 }

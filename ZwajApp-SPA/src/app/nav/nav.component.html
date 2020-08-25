@@ -20,6 +20,10 @@ font-family:ToyorAljanah;font-size:2.25rem;font-weight:bolder" class="navbar-bra
       </a>
     </li>
 
+    <li  *hasRole="['Admin','Moderator']" class="nav-item" routerLinkActive="active">
+      <a class="nav-link" [routerLink]="['/admin']">لوحة التحكم</a>
+    </li>
+
   </ul>
 
 

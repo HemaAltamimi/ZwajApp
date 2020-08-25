@@ -79,7 +79,9 @@
           </tab>
 
           <tab heading="الرسائل" (deselect)="deselect();">
-            <app-member-messages [recipientId]="user.id"> </app-member-messages>
+            <app-member-messages *ngIf="paid" [recipientId]="user.id"> </app-member-messages>
+
+            <app-payment *ngIf="!paid"></app-payment>
  
           </tab>
 

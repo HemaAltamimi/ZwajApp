@@ -28,9 +28,9 @@ import { ErrorInterceptorProvidor } from './_services/error.interceptor';
 
 import { AuthService } from './_services/auth.service';
 import { AuthGuard } from './_guards/auth.guard';
-import { UserService } from './_services/User.service';
+import { UserService } from './_services/user.service';
 
-import { BsDropdownModule, TabsModule, BsDatepickerModule, PaginationModule, ButtonsModule } from 'ngx-bootstrap';
+import { BsDropdownModule, TabsModule, BsDatepickerModule, PaginationModule, ButtonsModule, ModalModule } from 'ngx-bootstrap';
 
 import { appRoutes } from './routes';
 import { MemberDetailResolver } from './_resolver/member-detail-resolver';
@@ -45,6 +45,15 @@ import {TimeAgoPipe} from 'time-ago-pipe';
 import { ListResolver } from './_resolver/lists.resolver';
 import { MessageResolver } from './_resolver/message.resolver';
 import { MemberMessagesComponent } from './members/member-messages/member-messages.component';
+import { PaymentComponent } from './payment/payment.component';
+import { MessagesGuard } from './_guards/messages.guard';
+import { ChargeGuard } from './_guards/charge.guard';
+import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
+import { HasRoleDirective } from './_directives/has-role.directive';
+import { UserManagementComponent } from './admin/user-management/user-management.component';
+import { PhotoManagementComponent } from './admin/photo-management/photo-management.component';
+import { AdminService } from './_services/admin.service';
+import { RolesModalComponent } from './admin/roles-modal/roles-modal.component';
 
 
 
@@ -66,7 +75,13 @@ export function tokenGetter() {
       MemberEditComponent,
       PhotoEditorComponent,
       TimeAgoPipe,
-      MemberMessagesComponent
+      MemberMessagesComponent,
+      PaymentComponent,
+      AdminPanelComponent,
+      HasRoleDirective,
+      UserManagementComponent,
+      PhotoManagementComponent,
+      RolesModalComponent, 
 
    ],
    imports: [
@@ -89,20 +104,27 @@ export function tokenGetter() {
        BsDatepickerModule.forRoot(),
        PaginationModule.forRoot(),
        
-      ButtonsModule
+       ButtonsModule.forRoot(),
+       ModalModule.forRoot()
    ],
    providers: [
       AuthService,
       ErrorInterceptorProvidor,
       AlertifyService,
       AuthGuard,
+      MessagesGuard,
+      ChargeGuard,
       UserService,
       MemberDetailResolver,
       MemberListResolver,
       MemberEditResolver,
       ListResolver,
       MessageResolver,
-      PreventUnsavedChangesGuard
+      PreventUnsavedChangesGuard,
+      AdminService,
+   ],
+   entryComponents:[
+      RolesModalComponent
    ],
    bootstrap: [
       AppComponent
