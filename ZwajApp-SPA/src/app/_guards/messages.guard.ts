@@ -15,6 +15,7 @@ export class MessagesGuard implements CanActivate {
        if(res==null){
         this.router.navigate(['charge']);
         return false;
+
        }
        else {
         return true;

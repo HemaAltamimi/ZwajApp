@@ -14,9 +14,16 @@ import { element } from '@angular/core/src/render3/instructions';
 export class AuthService {
 
   jwtHelper =new  JwtHelperService();
-constructor(private http:HttpClient) { }
+
 
 baseUrl= environment.apiUrl +'Auth/';
+
+sitelang:string ='ar';
+dir:string ='rtl';
+
+
+language =new BehaviorSubject<string>('ar');
+lang =this.language.asObservable();
 
 decodedToken:any;
 
@@ -32,6 +39,21 @@ latestCount =this.unReadCount.asObservable();
 
 
 hubConnection:HubConnection =new HubConnectionBuilder().withUrl("http://localhost:5000/chat").build();
+
+constructor(private http:HttpClient) {
+  this.lang.subscribe(
+    lang =>{
+      if(lang == 'en'){
+        this.dir ='ltr';
+        this.sitelang ='en';
+      }
+      else{
+        this.dir ='rtl';
+        this.sitelang ='ar';
+      }
+    }
+  )
+}
 
 
 login(model:any){

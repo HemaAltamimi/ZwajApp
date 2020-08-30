@@ -25,6 +25,8 @@ using Stripe;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using DinkToPdf.Contracts;
+using DinkToPdf;
 
 namespace ZwajApp.API
 {
@@ -69,6 +71,9 @@ namespace ZwajApp.API
             
             services.AddControllers();
             //services.AddCors();
+
+
+            services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
             services.AddCors(options =>
                         {
                             options.AddDefaultPolicy(builder => 

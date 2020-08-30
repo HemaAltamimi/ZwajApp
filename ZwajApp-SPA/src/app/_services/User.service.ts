@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { User } from "../_models/User";
 import { PaginationResult } from "../_models/Pagination";
-import { map } from "rxjs/operators";
+import { map, tap } from "rxjs/operators";
 import { Message } from "../_models/message";
 
 /*
@@ -149,4 +149,20 @@ export class UserService {
   getPaymentForUser(userId:number){
     return this.http.get(this.baseUrl + userId + '/payment');
   }
+
+
+  GetReportForUser(id:number):any  {
+    return this.http.get(this.baseUrl + 'UserReport/'+id,{ headers: 
+      new HttpHeaders({'Content-Type': 'application/pdf'}),responseType:'blob'}).pipe (
+    tap (
+        () => console.log('تم إستلام الملف بنجاح'),
+        error => console.log(error)
+     )
+   );
+  }
+
+  getAllUser(){
+    return this.http.get(this.baseUrl + 'GetAllUsersExceptAdmin');
+  }
+  
 }

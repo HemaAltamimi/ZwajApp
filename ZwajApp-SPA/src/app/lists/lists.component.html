@@ -1,14 +1,18 @@
 <div class="container mt-1">
   <div class="row">
-    <div class="col-md-11 text-center mt-3">
-      <h3 style="font-family:'Droid-Arabic-Kufi';margin-right:145px">{{likeParam === 'Likers' ? 'من أعجبوا بي' : 'من
+    <div [dir]="authService.dir" class="col-md-11 text-center mt-3">
+      <h3 [hidden]="authService.dir === 'ltr'" style="font-family:'Droid-Arabic-Kufi';">{{likeParam === 'Likers' ? 'من أعجبوا بي' : 'من
         أعجبت بهم'}} : {{pagination.totalItems}}</h3>
+
+        <h3 [hidden]="authService.dir === 'rtl'" style="font-family:'Droid-Arabic-Kufi';">{{likeParam === 'Likers' ? 'My Likers': 'My Likees' }} : {{pagination.totalItems}}</h3>
+  
+        
     </div>
-    <div class="col-md-1 float-left">
+    <div   [ngClass]="authService.dir ==='rtl'? 'float-left' : 'float-right'" class="col-md-1">
       <div class="btn-group-vertical">
-        <button type="button" [(ngModel)]="likeParam" btnRadio="Likers" (click)="loadUsers();"  class="btn mb-1 ajs-button btn-up"
+        <button Lang type="button" [(ngModel)]="likeParam" btnRadio="Likers" (click)="loadUsers();"  class="btn mb-1 ajs-button btn-up"
           [ngStyle]="{'background':likeParam ==='Likers'?'red' : ''}">أعجبهم</button>
-        <button type="button" [(ngModel)]="likeParam" (click)="loadUsers();" btnRadio="Likees"  class="btn ajs-button btn-down"
+        <button Lang type="button" [(ngModel)]="likeParam" (click)="loadUsers();" btnRadio="Likees"  class="btn ajs-button btn-down"
           [ngStyle]="{'background':likeParam ==='Likees'?'red' : ''}">يعجبونني</button>
       </div>
     </div>

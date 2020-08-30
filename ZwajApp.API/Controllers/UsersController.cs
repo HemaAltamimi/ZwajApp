@@ -11,6 +11,9 @@ using ZwajApp.API.Models;
 using Stripe;
 using Microsoft.Extensions.Options;
 using System;
+using DinkToPdf;
+using System.IO;
+using DinkToPdf.Contracts;
 
 namespace ZwajApp.API.Controllers
 {
@@ -23,8 +26,10 @@ namespace ZwajApp.API.Controllers
         private readonly IZawajRepository _repo;
         private readonly IMapper _mapper;
         private readonly IOptions<StripeSettings> _stripeSettings;
-        public UsersController(IZawajRepository repo, IMapper mapper, IOptions<StripeSettings> stripeSettings)
+        private readonly IConverter _converter;
+        public UsersController(IZawajRepository repo, IMapper mapper, IOptions<StripeSettings> stripeSettings, IConverter converter)
         {
+            _converter = converter;
             _stripeSettings = stripeSettings;
             _mapper = mapper;
             _repo = repo;
@@ -34,7 +39,7 @@ namespace ZwajApp.API.Controllers
         public async Task<IActionResult> GetUsers([FromQuery] UserParams userParams)
         {
             var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var UserFromRepo = await _repo.GetUser(currentUserId,true);
+            var UserFromRepo = await _repo.GetUser(currentUserId, true);
             userParams.UserId = currentUserId;
             if (string.IsNullOrEmpty(userParams.Gender))
             {
@@ -51,7 +56,7 @@ namespace ZwajApp.API.Controllers
         [HttpGet("{id}", Name = "GetUser")]
         public async Task<IActionResult> GetUser(int id)
         {
-            var isCurrentUser =int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value) == id;
+            var isCurrentUser = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value) == id;
             var user = await _repo.GetUser(id, isCurrentUser);
             if (user == null) return BadRequest("لا يوجد مستخدم");
 
@@ -64,7 +69,7 @@ namespace ZwajApp.API.Controllers
         {
             if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value)) return Unauthorized();
 
-            var UserFromRepo = await _repo.GetUser(id,true);
+            var UserFromRepo = await _repo.GetUser(id, true);
             _mapper.Map(userForUpdateDto, UserFromRepo);
             if (await _repo.SaveAll())
             {
@@ -81,7 +86,7 @@ namespace ZwajApp.API.Controllers
             var like = await _repo.GetLike(id, recipientId);
             if (like != null)
                 return BadRequest("لقد قمت بالإعجاب بهذا المشترك من قبل");
-            if (await _repo.GetUser(recipientId ,false) == null) return NotFound();
+            if (await _repo.GetUser(recipientId, false) == null) return NotFound();
             like = new Like
             {
                 LikerId = id,
@@ -94,66 +99,116 @@ namespace ZwajApp.API.Controllers
         }
 
 
-           [HttpPost("{userId}/charge/{stripeToken}")]
-            public async Task<IActionResult> Charge(int userId, string stripeToken)
+        [HttpPost("{userId}/charge/{stripeToken}")]
+        public async Task<IActionResult> Charge(int userId, string stripeToken)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var customers = new CustomerService();
+            var charges = new ChargeService();
+
+            // var options = new TokenCreateOptions
+            // {
+            // Card = new CreditCardOptions
+            //     {
+            //         // Number = "4242424242424242",
+            //         // ExpYear = 2020,
+            //         // ExpMonth = 3,
+            //         // Cvc = "123"
+            //     }
+            // };
+
+            // var service = new TokenService();
+            // Token stripeToken = service.Create(options);
+
+            var customer = customers.Create(new CustomerCreateOptions
             {
-                if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-                    return Unauthorized();
+                Source = stripeToken,
+            });
 
-                var customers = new CustomerService();
-                var charges = new  ChargeService();
-
-                // var options = new TokenCreateOptions
-                // {
-                // Card = new CreditCardOptions
-                //     {
-                //         // Number = "4242424242424242",
-                //         // ExpYear = 2020,
-                //         // ExpMonth = 3,
-                //         // Cvc = "123"
-                //     }
-                // };
-
-                // var service = new TokenService();
-                // Token stripeToken = service.Create(options);
-
-                var customer = customers.Create(new CustomerCreateOptions {
-                Source = stripeToken ,
-                });
-
-                var charge = charges.Create(new ChargeCreateOptions {
+            var charge = charges.Create(new ChargeCreateOptions
+            {
                 Amount = 5000,
                 Description = "إشتراك مدى الحياة",
                 Currency = "usd",
                 Customer = customer.Id
-                });
+            });
 
-                var payment = new Payment{
-                    PaymentDate = DateTime.Now,
-                    Amount = charge.Amount/100,
-                    UserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value),
-                    ReceiptUrl = charge.ReceiptUrl,
-                    Description = charge.Description,
-                    Currency = charge.Currency,
-                    IsPaid = charge.Paid
-                };
-                _repo.Add<Payment>(payment);
-                if(await _repo.SaveAll()){
-                    return Ok(new {IsPaid = charge.Paid } );
-                }
-
-                return BadRequest("فشل في السداد");
-
-            }
-
-            [HttpGet("{userId}/payment")]
-            public async Task<IActionResult> GetPaymentForUser(int userId)
+            var payment = new Payment
             {
-                 if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-                    return Unauthorized();
-                var payment = await _repo.GetPaymentForUser(userId);
-                return Ok(payment);
+                PaymentDate = DateTime.Now,
+                Amount = charge.Amount / 100,
+                UserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value),
+                ReceiptUrl = charge.ReceiptUrl,
+                Description = charge.Description,
+                Currency = charge.Currency,
+                IsPaid = charge.Paid
+            };
+            _repo.Add<Payment>(payment);
+            if (await _repo.SaveAll())
+            {
+                return Ok(new { IsPaid = charge.Paid });
             }
+
+            return BadRequest("فشل في السداد");
+
+        }
+
+        [HttpGet("{userId}/payment")]
+        public async Task<IActionResult> GetPaymentForUser(int userId)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+            var payment = await _repo.GetPaymentForUser(userId);
+            return Ok(payment);
+        }
+
+
+
+        [Authorize(Policy = "RequireAdminRole")]
+        [HttpGet("UserReport/{userId}")]
+        public IActionResult CreatePdfForUser(int userId)
+        {
+            var templateGenerator = new TemplateGenerator(_repo, _mapper);
+            var globalSettings = new GlobalSettings
+            {
+                ColorMode = ColorMode.Color,
+                Orientation = Orientation.Portrait,
+                PaperSize = PaperKind.A4,
+                Margins = new MarginSettings { Top = 15, Bottom = 20 },
+                DocumentTitle = "بطاقة مشترك"
+
+            };
+
+            var objectSettings = new ObjectSettings
+            {
+                PagesCount = true,
+                HtmlContent = templateGenerator.GetHTMLStringForUser(userId),
+                WebSettings = { DefaultEncoding = "utf-8", UserStyleSheet = Path.Combine(Directory.GetCurrentDirectory(), "assets", "styles.css") },
+                HeaderSettings = { FontName = "Impact", FontSize = 12, Spacing = 5, Line = false },
+                FooterSettings = { FontName = "Geneva", FontSize = 15, Spacing = 7, Line = true, Center = "ZwajApp By Ibrahim Altamimi", Right = "[page]" }
+            };
+
+            var pdf = new HtmlToPdfDocument()
+            {
+                GlobalSettings = globalSettings,
+                Objects = { objectSettings }
+            };
+
+            var file = _converter.Convert(pdf);
+            return File(file, "application/pdf");
+        }
+
+
+         [Authorize(Policy = "ModeratePhotoRole")]
+         [HttpGet("GetAllUsersExceptAdmin")]
+         public async Task<IActionResult> GetAllUsersExceptAdmin(){
+             var users= await _repo.GetAllUsersExceptAdmin();
+             var usersToReturn = _mapper.Map<IEnumerable<UserForListDto>>(users);
+             return Ok(usersToReturn);
+         }
+
 
     }
 }

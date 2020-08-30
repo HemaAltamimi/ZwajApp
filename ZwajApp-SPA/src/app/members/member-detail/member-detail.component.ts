@@ -31,6 +31,7 @@ export class MemberDetailComponent implements OnInit,AfterViewChecked {
 
   ngAfterViewChecked(): void {
     setTimeout(() => {
+      console.log(this.authService.paid);
         this.paid =this.authService.paid;
     }, 0);
   }

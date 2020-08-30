@@ -11,6 +11,7 @@
       <td>{{user.userName}}</td>
       <td><span class="role-badge" *ngFor="let role of user.roles">{{role}}</span></td>
       <td><button class="btn ajs-button ajs-header" (click)="editRolesModal(user)">تعديل الأدوار</button></td>
+      <td><button class="btn ajs-button ajs-header" (click)="userId=user.id ; getUserReport();">طباعة</button></td>
     </tr>
   </table>
   </div> 
